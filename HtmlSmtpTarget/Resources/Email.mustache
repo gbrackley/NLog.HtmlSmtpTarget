@@ -1,0 +1,167 @@
+﻿<html>
+<head>
+    <!--
+
+      A template to convert NLog entries to html for an Email
+
+      (c) Greg Brackley, 2010-2017
+
+    -->
+
+
+    <style type="text/css">
+        .bannercell {
+            border: 0;
+            padding: 0;
+        }
+
+        body {
+            margin-left: 10px;
+            margin-right: 10px;
+            font: normal 80% arial, helvetica, sanserif;
+            background-color: #FFFFFF;
+            color: #000000;
+        }
+
+        .a td {
+            background: #efefef;
+        }
+
+        .b td {
+            background: #fff;
+        }
+
+        th, td {
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            font-weight: bold;
+            background: #ccc;
+            color: black;
+        }
+
+        table, th, td {
+            font-size: 100%;
+            border: none
+        }
+
+            table.log tr td, tr th {
+            }
+
+        h2 {
+            font-weight: bold;
+            font-size: 140%;
+            margin-bottom: 5px;
+        }
+
+        h3 {
+            font-size: 100%;
+            font-weight: bold;
+            background: #525D76;
+            color: white;
+            text-decoration: none;
+            padding: 5px;
+            margin-right: 2px;
+            margin-left: 2px;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <!--
+        Summary part
+        ============
+
+        This is the summary of the log entries that caused the triggering (sending) of the email.
+        Only the text part of the log entry is shown (i.e. we don't clutter the summary with
+        stack trace information).
+
+    -->
+    <h3>Messages</h3>
+    <table class="log" border="0" cellpadding="5" cellspacing="2" width="100%">
+        <tr>
+            <th title="The log message level (FATAL, ERROR, WARN, INFO, DEBUG, TRACE)">Level</th>
+            <th title="The UTC timestamp for the logging event">Time</th>
+            <th title="The nested diagnostic logical context">Context</th>
+            <th title="Log message without any associated exception">Message</th>
+        </tr>
+        {{#Events}}
+
+
+        <tr>
+            <!-- Column 1: Level -->
+            <td>
+                <img style="image-{{Level}}" alt="{{Level}}" title="{{Level}}" />
+            </td>
+
+            <!-- Column 2: Timestamp -->
+            <td>
+                {{TimeStamp}}
+            </td>
+
+            <!-- Column 3: MDLC (Mapped Diagnostics Logical Context) -->
+            <td>
+                {{TODO}}
+            </td>
+
+            <!-- Column 4: Message Text -->
+            <td>
+                {{message}}
+            </td>
+            {{/Events}}
+        </tr>
+    </table>
+
+    <hr size="1" width="100%" align="left" />
+
+    <!--
+        Event Logging List
+        ==================
+
+        This is the full list of all the log message, along with the exceptions.
+    -->
+
+    <h3>All Messages</h3>
+    <table class="log" border="0" cellpadding="5" cellspacing="2" width="100%">
+        <tr>
+            <th title="The log message level (FATAL, ERROR, WARN, INFO, DEBUG, TRACE)">Level</th>
+            <th title="The UTC timestamp for the logging event">Time</th>
+            <th title="The nested diagnostic logical context">Context</th>
+            <th title="Log message and the exception">Message</th>
+        </tr>
+        {{#Events}}
+        <tr>
+            <xsl:call-template name="alternated-row" />
+
+            <!-- Column 1: Level -->
+            <td>
+                <img style="image-{{Level}}" alt="{{Level}}" title="{{Level}}" />
+            </td>
+            <!-- Column 2: Timestamp -->
+            <td>
+                {{TimeStamp}}
+            </td>
+
+            <!-- Column 3: MDLC (Mapped Diagnostics Logical Context) -->
+            <td>
+                {{TODO}}
+            </td>
+
+            <!-- Column 4: Message Text -->
+            <td>
+                {{message}}
+                <br />
+                <span class="stacktrace">
+                    {{exception}}
+                </span>
+            </td>
+        </tr>
+        {{/Events}}
+    </table>
+
+    <hr size="1" width="100%" align="left" />
+
+</body>
+</html>
