@@ -45,7 +45,9 @@ namespace NLog.HtmlSmtpTarget.Target
             MaximumEventsPerMessage = 1024;
             HolddownPeriod = new TimeSpan(0, 15, 0);
             _triggerLevel = LogLevel.Warn;
-            Subject = "NLog messages";
+            Subject = new SimpleLayout("[${machinename}] ${processname} ${event-properties:item=TriggerEvents} of ${event-properties:item=TotalEvents} [${event-properties:item=GroupAlertEvents},${event-properties:item=GroupWarnEvents},${event-properties:item=GroupInfoEvents} ,${event-properties:item=GroupDevEvents}] (${event-properties:item=LostEvents} lost)");
+
+
             From = string.Format("NLog <htmlsmtp@{0}>", Dns.GetHostName());
             Transport = new SimpleLayout(SmtpClientFactory.MakeDefaultTransport());
 
@@ -460,6 +462,13 @@ namespace NLog.HtmlSmtpTarget.Target
             var model = MakeMailBodyModel(buffer, loggingEventsLost, _triggerLevel);
             
             var dummyInfo = new LogEventInfo(LogLevel.Off, "", "");
+            dummyInfo.Properties["LostEvents"]= loggingEventsLost;
+            dummyInfo.Properties["TriggerEvents"] = buffer.Count(e=>e.Level >= _triggerLevel);
+            dummyInfo.Properties["TotalEvents"] = buffer.Count;
+            dummyInfo.Properties["GroupDevEvents"] = buffer.Count(e => e.Level < LogLevel.Info);
+            dummyInfo.Properties["GroupInfoEvents"] = buffer.Count(e => e.Level == LogLevel.Info);
+            dummyInfo.Properties["GroupWarnEvents"] = buffer.Count(e => e.Level == LogLevel.Warn);
+            dummyInfo.Properties["GroupAlertEvents"] = buffer.Count(e => e.Level > LogLevel.Warn);
 
 
             var mailMessage = new MailMessage
