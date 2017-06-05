@@ -60,8 +60,6 @@ namespace NLog.HtmlSmtpTarget.Properties {
             }
         }
         
-       
-        
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -73,12 +71,37 @@ namespace NLog.HtmlSmtpTarget.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
+        ///   Looks up a localized string similar to &lt;html&gt;
+        ///&lt;head&gt;
+        ///    &lt;!--
+        ///
+        ///      A template to convert NLog entries to html for an Email
+        ///
+        ///      (c) Greg Brackley, 2010-2017
+        ///
+        ///    --&gt;
+        ///
+        ///
+        ///    &lt;style type=&quot;text/css&quot;&gt;
+        ///        .bannercell {
+        ///            border: 0;
+        ///            padding: 0;
+        ///        }
+        ///
+        ///        body {
+        ///            margin-left: 10px;
+        ///            margin-right: 10px;
+        ///            font: normal 80% arial, helvetica, sanserif;
+        ///            background-color: #FFFFFF;
+        ///            color: #000000;
+        ///        }
+        ///
+        ///        .a td {
+        ///            back [rest of string was truncated]&quot;;.
         /// </summary>
         public static string Email {
             get {
-                object obj = ResourceManager.GetObject("Email", resourceCulture);
-                return ((string)(obj));
+                return ResourceManager.GetString("Email", resourceCulture);
             }
         }
         

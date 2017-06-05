@@ -26,7 +26,7 @@ namespace NLog.HtmlSmtpTarget
             };
 
             // Make the email
-            var body = Target.HtmlSmtpTarget.RenderHtmlEmailBody(Target.HtmlSmtpTarget.MakeEmailBodyModel(events, 0));
+            var body = Target.HtmlSmtpTarget.MakeTemplate()(Target.HtmlSmtpTarget.MakeMailBodyModel(events, 0, LogLevel.Warn));
             Log.InfoFormat("Mail body is:\n{0}", body);
 
 
@@ -49,7 +49,7 @@ namespace NLog.HtmlSmtpTarget
             };
 
             // Make the email
-            var body = Target.HtmlSmtpTarget.RenderHtmlEmailBody(Target.HtmlSmtpTarget.MakeEmailBodyModel(events, 0));
+            var body = Target.HtmlSmtpTarget.MakeTemplate()(Target.HtmlSmtpTarget.MakeMailBodyModel(events, 0, LogLevel.Warn));
             Log.InfoFormat("Mail body is:\n{0}", body);
 
 
@@ -69,7 +69,7 @@ namespace NLog.HtmlSmtpTarget
             };
 
             // Make the email
-            var body = Target.HtmlSmtpTarget.RenderHtmlEmailBody(Target.HtmlSmtpTarget.MakeEmailBodyModel(events, 0));
+            var body = Target.HtmlSmtpTarget.MakeTemplate()(Target.HtmlSmtpTarget.MakeMailBodyModel(events, 0, LogLevel.Warn));
             Log.InfoFormat("Mail body is:\n{0}", body);
 
 

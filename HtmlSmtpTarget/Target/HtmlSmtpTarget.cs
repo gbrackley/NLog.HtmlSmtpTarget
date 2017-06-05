@@ -12,12 +12,15 @@ using NLog.HtmlSmtpTarget.Properties;
 using NLog.HtmlSmtpTarget.Target.Utils;
 using NLog.Layouts;
 using NLog.Targets;
-using Nustache.Core;
 using System.ComponentModel;
+using System.IO;
+using HandlebarsDotNet;
 using NLog.HtmlSmtpTarget.Target.HtmlSmtp;
 
 namespace NLog.HtmlSmtpTarget.Target
 {
+    using System.Linq;
+
     [Target("HtmlSmtp")]
     public class HtmlSmtpTarget : Targets.Target, IHtmlSmtpTargetConfig
     {
@@ -33,6 +36,7 @@ namespace NLog.HtmlSmtpTarget.Target
         private readonly CancellationTokenSource _cancelTokenSource;
         private long _lostEvents;
         private LogLevel _triggerLevel;
+        private Func<object, string> _mailTemplate;
 
         public HtmlSmtpTarget()
         {
@@ -42,10 +46,20 @@ namespace NLog.HtmlSmtpTarget.Target
             HolddownPeriod = new TimeSpan(0, 15, 0);
             _triggerLevel = LogLevel.Warn;
             Subject = "NLog messages";
-            From = string.Format("NLog <htmlsmtptarget@{0}>", Dns.GetHostName());
+            From = string.Format("NLog <htmlsmtp@{0}>", Dns.GetHostName());
             Transport = SmtpClientFactory.MakeDefaultTransport();
 
+            Message = new SimpleLayout("${message}");
+            Timestamp = new SimpleLayout("${longdate}");
+            Context = new SimpleLayout("${mdlc:item=id}");
+            Exception = new SimpleLayout("${exception:format=Message,ToString}");
+            Level = new SimpleLayout(@"<img style=""image-{$Level}"" alt=""${Level}"" title=""${Level}"" />");
 
+            _mailTemplate = MakeTemplate();
+            Handlebars.RegisterHelper("layout", (writer, context, parameters) =>
+            {
+                LayoutHelper(writer, context, parameters);
+            });
             _cancelTokenSource = new CancellationTokenSource();
             _worker = new Thread(Worker)
             {
@@ -53,6 +67,7 @@ namespace NLog.HtmlSmtpTarget.Target
                 IsBackground = true,
             };
         }
+
 
         /// <summary>
         ///     The SMTP smart host used for mail forwarding.
@@ -84,6 +99,26 @@ namespace NLog.HtmlSmtpTarget.Target
 
         public MailPriority Priority { get; set; }
 
+        /// <summary>
+        /// The layout used to render a message in the html mail body
+        /// </summary>
+        public Layout Message { get; set; }
+        /// <summary>
+        /// The layout used to render a timestamp in the html mail body
+        /// </summary>
+        public Layout Timestamp { get; set; }
+        /// <summary>
+        /// The layout used to render context information (MDC, NDC, NDLC) in the html mail body
+        /// </summary>
+        public Layout Context { get; set; }
+        /// <summary>
+        /// The layout used to render an exception in the html mail body
+        /// </summary>
+        public Layout Exception { get; set; }
+        /// <summary>
+        /// The layout used to render a level in the html mail body
+        /// </summary>
+        public Layout Level { get; set; }
 
         /// <summary>
         ///     The period of time before the next email message is able to be delivered
@@ -129,7 +164,7 @@ namespace NLog.HtmlSmtpTarget.Target
         ///     that individual messages don't get too large.
         /// </summary>
         [DefaultValue("1024")]
-            public int MaximumEventsPerMessage { get; set; }
+        public int MaximumEventsPerMessage { get; set; }
 
         /// <summary>
         ///     The number of logging events to show prior to the triggering logging event
@@ -143,7 +178,8 @@ namespace NLog.HtmlSmtpTarget.Target
         /// </summary>
         /// <seealso cref="Threshold" />
         [DefaultValue("Warn")]
-        public string TriggerLevel {
+        public string TriggerLevel
+        {
             get { return _triggerLevel.ToString(); }
             set { _triggerLevel = LogLevel.FromString(value); }
         }
@@ -154,7 +190,7 @@ namespace NLog.HtmlSmtpTarget.Target
             InternalLogger.Debug("HTML SMTP target initialise");
             base.InitializeTarget();
 
-            
+
             _queue = (EventBacklog > 0)
                 ? new BlockingCollection<LogEventInfo>(EventBacklog)
                 : new BlockingCollection<LogEventInfo>();
@@ -197,6 +233,62 @@ namespace NLog.HtmlSmtpTarget.Target
             if (!_queue.TryAdd(logEvent))
             {
                 Interlocked.Increment(ref _lostEvents);
+            }
+        }
+
+
+        /// <summary>
+        /// A HandleBars helper to call the NLog layout renderer
+        /// </summary>
+        /// <remarks>
+        ///   The handlebar helper called 'layout' provides one parameter which is the name of
+        /// the specific layout on this target. The current log message (LogEventInfo) is
+        /// then formatted based on the configured NLog Layout.
+        /// </remarks>
+        /// <seealso cref="https://github.com/rexm/Handlebars.Net"/>
+        internal void LayoutHelper(TextWriter writer, dynamic context, object[] parameters)
+        {
+            Layout layout;
+            if (parameters.Length >= 0)
+            {
+                if ("message".Equals(parameters[0] as string, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    layout = Message;
+                }
+                else if ("timestamp".Equals(parameters[0] as string, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    layout = Timestamp;
+                }
+                else if ("context".Equals(parameters[0] as string, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    layout = Context;
+                }
+                else if ("exception".Equals(parameters[0] as string, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    layout = Exception;
+                }
+                else if ("level".Equals(parameters[0] as string, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    layout = Level;
+                }
+                else
+                {
+                    layout = Message;
+                }
+            }
+            else
+            {
+                layout = Message;
+            }
+
+            LogEventInfo anEvent = context as LogEventInfo;
+            if (anEvent != null && layout != null)
+            {
+                writer.WriteSafeString(layout.Render(anEvent));
+            }
+            else
+            {
+                InternalLogger.Trace("Failed to render template layout");
             }
         }
 
@@ -290,7 +382,7 @@ namespace NLog.HtmlSmtpTarget.Target
         public static int ToMillseconds(TimeSpan t)
         {
             var milli = t.Ticks / TimeSpan.TicksPerMillisecond;
-            return (milli < int.MaxValue) ? (int) milli : int.MaxValue;
+            return (milli < int.MaxValue) ? (int)milli : int.MaxValue;
         }
 
         /// <summary>
@@ -313,7 +405,7 @@ namespace NLog.HtmlSmtpTarget.Target
                 var now = DateTime.UtcNow;
 
                 long loggingEventsLost = Interlocked.Read(ref _lostEvents);
-                Deliver(MakeEmail(state.Buffer, loggingEventsLost));
+                Deliver(MakeEmail(state.Buffer.ToList(), loggingEventsLost));
 
                 // Reduce the lost event count by the number that have been reported
                 // in the email.
@@ -363,9 +455,9 @@ namespace NLog.HtmlSmtpTarget.Target
             }
         }
 
-        public MailMessage MakeEmail(IEnumerable<LogEventInfo> buffer, long loggingEventsLost)
+        public MailMessage MakeEmail(IList<LogEventInfo> buffer, long loggingEventsLost)
         {
-            var model = MakeEmailBodyModel(buffer, loggingEventsLost);
+            var model = MakeMailBodyModel(buffer, loggingEventsLost, _triggerLevel);
 
 
             var dummyInfo = new LogEventInfo(LogLevel.Off, "", "");
@@ -402,18 +494,27 @@ namespace NLog.HtmlSmtpTarget.Target
             return mailMessage;
         }
 
-        public static string RenderHtmlEmailBody(object model)
+        public string RenderHtmlEmailBody(object model)
         {
-            return Render.StringToString(Resources.Email, model);
+            return _mailTemplate(model);
         }
 
-        public static object MakeEmailBodyModel(
-            IEnumerable<LogEventInfo> buffer, 
-            long loggingEventsLost)
+
+        public static Func<object, string> MakeTemplate()
+        {
+            return Handlebars.Compile(Resources.Email);
+        }
+
+
+        public static object MakeMailBodyModel(
+            IList<LogEventInfo> buffer,
+            long loggingEventsLost,
+            LogLevel triggerLevel)
         {
             var model = new
             {
-                Events = buffer,
+                TriggerEvents = buffer.Where(e => e.Level >= triggerLevel),
+                AllEvents = buffer,
                 EventsLost = loggingEventsLost,
             };
             return model;

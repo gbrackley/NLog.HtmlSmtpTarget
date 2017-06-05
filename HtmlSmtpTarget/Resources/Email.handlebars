@@ -31,6 +31,14 @@
             background: #fff;
         }
 
+        tr:nth-child(even) {
+            background: #efefef;
+        }
+
+        tr:nth-child(odd) {
+            background: #fff;
+        }
+
         th, td {
             text-align: left;
             vertical-align: top;
@@ -47,8 +55,8 @@
             border: none
         }
 
-            table.log tr td, tr th {
-            }
+        table.log tr td, tr th {
+        }
 
         h2 {
             font-weight: bold;
@@ -66,6 +74,12 @@
             margin-right: 2px;
             margin-left: 2px;
             margin-bottom: 0;
+        }
+
+        .stacktrace {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 8px;
+            white-space: pre;
         }
     </style>
 </head>
@@ -87,31 +101,29 @@
             <th title="The nested diagnostic logical context">Context</th>
             <th title="Log message without any associated exception">Message</th>
         </tr>
-        {{#Events}}
-
-
+        {{#TriggerEvents}}
         <tr>
             <!-- Column 1: Level -->
             <td>
-                <img style="image-{{Level}}" alt="{{Level}}" title="{{Level}}" />
+                {{layout "level"}}
             </td>
 
             <!-- Column 2: Timestamp -->
             <td>
-                {{TimeStamp}}
+                {{layout "timestamp"}}
             </td>
 
             <!-- Column 3: MDLC (Mapped Diagnostics Logical Context) -->
             <td>
-                {{TODO}}
+                {{layout "context"}}
             </td>
 
             <!-- Column 4: Message Text -->
             <td>
-                {{message}}
+                {{layout "message"}}
             </td>
-            {{/Events}}
         </tr>
+        {{/TriggerEvents}}
     </table>
 
     <hr size="1" width="100%" align="left" />
@@ -131,34 +143,31 @@
             <th title="The nested diagnostic logical context">Context</th>
             <th title="Log message and the exception">Message</th>
         </tr>
-        {{#Events}}
+        {{#AllEvents}}
         <tr>
-            <xsl:call-template name="alternated-row" />
-
             <!-- Column 1: Level -->
             <td>
-                <img style="image-{{Level}}" alt="{{Level}}" title="{{Level}}" />
+                {{layout "level"}}
             </td>
+
             <!-- Column 2: Timestamp -->
             <td>
-                {{TimeStamp}}
+                {{layout "timestamp"}}
             </td>
 
             <!-- Column 3: MDLC (Mapped Diagnostics Logical Context) -->
             <td>
-                {{TODO}}
+                {{layout "context"}}
             </td>
 
             <!-- Column 4: Message Text -->
             <td>
-                {{message}}
+                {{layout "message"}}
                 <br />
-                <span class="stacktrace">
-                    {{exception}}
-                </span>
+                <span class="stacktrace">{{layout "exception"}}</span>
             </td>
         </tr>
-        {{/Events}}
+        {{/AllEvents}}
     </table>
 
     <hr size="1" width="100%" align="left" />
