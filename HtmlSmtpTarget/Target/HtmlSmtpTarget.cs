@@ -22,7 +22,7 @@ namespace NLog.HtmlSmtpTarget.Target
     using System.Linq;
 
     [Target("HtmlSmtp")]
-    public class HtmlSmtpTarget : Targets.Target, IHtmlSmtpTargetConfig
+    public class HtmlSmtpTarget : Targets.Target
     {
         public const string IsTriggerLoggingEvent = "IsTrigger";
 
@@ -47,7 +47,7 @@ namespace NLog.HtmlSmtpTarget.Target
             _triggerLevel = LogLevel.Warn;
             Subject = "NLog messages";
             From = string.Format("NLog <htmlsmtp@{0}>", Dns.GetHostName());
-            Transport = SmtpClientFactory.MakeDefaultTransport();
+            Transport = new SimpleLayout(SmtpClientFactory.MakeDefaultTransport());
 
             Message = new SimpleLayout("${message}");
             Timestamp = new SimpleLayout("${longdate}");
@@ -85,7 +85,7 @@ namespace NLog.HtmlSmtpTarget.Target
         ///     smtp://smtp.isp.com
         ///   </code>
         /// </example>
-        public string Transport { get; set; }
+        public Layout Transport { get; set; }
 
         [RequiredParameter]
         public Layout To { get; set; }
@@ -424,7 +424,7 @@ namespace NLog.HtmlSmtpTarget.Target
         protected virtual void Deliver(MailMessage mailMessage)
         {
             SmtpClientFactory
-                .ParseConfiguration(Transport)
+                .ParseConfiguration(Transport.Render(new LogEventInfo()))
                 .Send(mailMessage);
         }
 
@@ -458,8 +458,7 @@ namespace NLog.HtmlSmtpTarget.Target
         public MailMessage MakeEmail(IList<LogEventInfo> buffer, long loggingEventsLost)
         {
             var model = MakeMailBodyModel(buffer, loggingEventsLost, _triggerLevel);
-
-
+            
             var dummyInfo = new LogEventInfo(LogLevel.Off, "", "");
 
 

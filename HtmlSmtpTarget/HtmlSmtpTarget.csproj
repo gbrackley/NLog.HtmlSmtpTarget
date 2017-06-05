@@ -82,7 +82,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Target\HtmlSmtpLayoutRenderer.cs" />
-    <Compile Include="Target\IHtmlSmtpTargetConfig.cs" />
     <Compile Include="Target\LinkedResources.cs" />
     <Compile Include="Target\HtmlSmtp\SmtpClientFactory.cs" />
     <Compile Include="Target\Utils\MatchUtils.cs" />
