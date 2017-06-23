@@ -286,7 +286,7 @@ namespace NLog.HtmlSmtpTarget.Target
             LogEventInfo anEvent = context as LogEventInfo;
             if (anEvent != null && layout != null)
             {
-                writer.WriteSafeString(layout.Render(anEvent));
+                writer.Write(layout.Render(anEvent));
             }
             else
             {
