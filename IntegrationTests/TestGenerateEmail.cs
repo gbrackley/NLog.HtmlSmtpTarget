@@ -26,8 +26,8 @@ namespace NLog.HtmlSmtpTarget
             var target = new Target.HtmlSmtpTarget()
             {
                 Name = "TestInstance",
-                To = "Greg Brackley <greg.brackley-log4net-htmlsmtpappender-test@lucidsolutions.co.nz>",
-                From = "greg.brackley-log4net-htmlsmtpappender-test-nunit@lucidsolutions.co.nz",
+                To = "Greg <greg-nlog-htmlsmtpappender-test@lucidsolutions.co.nz>",
+                From = "greg-nlog-htmlsmtpappender-test-nunit@lucidsolutions.co.nz",
                 Transport = "smtp://smtp.lucidsolutions.co.nz",
                 Subject = "[Fact] %events{triggering} of %events{total} [%events{class.unrecoverable},%events{class.recoverable},%events{class.information},%events{class.debug}] (lost %events{lost})",
             };

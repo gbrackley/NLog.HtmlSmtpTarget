@@ -30,7 +30,7 @@ namespace NLog.HtmlSmtpTarget.Target
             string resourceName,
             string cidName)
         {
-            string resourcePath = string.Format("log4net.Resources.Icons.{0}.gif", resourceName);
+            string resourcePath = string.Format("nlog.Resources.Icons.{0}.gif", resourceName);
             Stream stream = typeof (Resources).Assembly.GetManifestResourceStream(resourcePath);
             if (stream != null)
             {

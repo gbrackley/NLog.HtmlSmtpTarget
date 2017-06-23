@@ -45,7 +45,7 @@ namespace NLog.HtmlSmtpTarget.Target
             MaximumEventsPerMessage = 1024;
             HolddownPeriod = new TimeSpan(0, 15, 0);
             _triggerLevel = LogLevel.Warn;
-            Subject = new SimpleLayout("[${machinename}] ${processname} ${event-properties:item=TriggerEvents} of ${event-properties:item=TotalEvents} [${event-properties:item=GroupAlertEvents},${event-properties:item=GroupWarnEvents},${event-properties:item=GroupInfoEvents} ,${event-properties:item=GroupDevEvents}] (${event-properties:item=LostEvents} lost) c${assembly-version}");
+            Subject = new SimpleLayout("[${machinename}] ${processname} ${event-properties:item=TriggerEvents} of ${event-properties:item=TotalEvents} [${event-properties:item=GroupAlertEvents},${event-properties:item=GroupWarnEvents},${event-properties:item=GroupInfoEvents} ,${event-properties:item=GroupDevEvents}] (${event-properties:item=LostEvents} lost) v${assembly-version}");
 
 
             From = string.Format("NLog <htmlsmtp@{0}>", Dns.GetHostName());

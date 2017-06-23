@@ -95,7 +95,6 @@
     <Compile Include="TestMakeHtmlLoggingEvents.cs" />
     <Compile Include="TestQueryMxRecords.cs" />
     <Compile Include="TestSmtpUrlConfiguration.cs" />
-    <Compile Include="TestStringFormatter.cs" />
     <Compile Include="Utils\LogExtensions.cs" />
     <Compile Include="Utils\PrettyPrintXml.cs" />
   </ItemGroup>

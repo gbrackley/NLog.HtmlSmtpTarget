@@ -11,11 +11,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("HtmlSmtpAppender")]
-[assembly: AssemblyDescription("A Log4net appender that supports sending logging events formatted as HTML via email")]
+[assembly: AssemblyDescription("A NLog appender that supports sending logging events formatted as HTML via email")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Lucid Solutions Ltd")]
 [assembly: AssemblyProduct("HtmlSmtpAppender")]
-[assembly: AssemblyCopyright("Copyright © Greg Brackley, Lucid Solutions Ltd 2010-2011")]
+[assembly: AssemblyCopyright("Copyright © Greg Brackley, Lucid Solutions Ltd 2010-2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

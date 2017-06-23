@@ -12,19 +12,22 @@ events are batched up into the next delivery window.
 
 # Configuration
 
-Add an appender to you log4net configuration:
+Add an appender to you nlog configuration:
 
  ```
-    <target name="HtmlSmtpAppender" type="log4net.Appender.HtmlSmtpAppender, HtmlSmtpAppender">
-        <to value="user@example.com" />
-        <from value="smtp-appender@example.com" />
-        <subject value="[Program] %events{triggering} of %events{total} [%events{class.unrecoverable},%events{class.recoverable},%events{class.information},%events{class.debug}] (lost %events{lost})" />
-        <transport value="smtp://localhost" />
-    </appender>
-    <root>
-        <appender-ref ref="HtmlSmtpAppender" />
-    </root>
+   <extensions>
+     <add assembly="HtmlSmtpTarget"/>
+   </extensions>
 
+   <target
+      name="HtmlSmtp"
+      xsi:type="HtmlSmtp"
+      to="user@example.com"
+      from="smtp-appender@example.com"/>
+
+  <rules>
+    <logger name="*" minlevel="Trace" writeTo="HtmlSmtp" />
+  </rules>
  ```
  
  The transport setting is a URI of the form `smtp://username:password@hostname:port`
