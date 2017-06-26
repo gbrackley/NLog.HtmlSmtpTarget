@@ -26,17 +26,12 @@ namespace NLog.HtmlSmtpTarget.Target
     {
         public const string IsTriggerLoggingEvent = "IsTrigger";
 
-        /// <summary>
-        ///     A XSLT parameter with the number of events that have been discarded.
-        /// </summary>
-        const string LostEventsParameterName = "logging_events_lost";
-
         private readonly Thread _worker;
         private BlockingCollection<LogEventInfo> _queue;
         private readonly CancellationTokenSource _cancelTokenSource;
         private long _lostEvents;
         private LogLevel _triggerLevel;
-        private Func<object, string> _mailTemplate;
+        private readonly Func<object, string> _mailTemplate;
 
         public HtmlSmtpTarget()
         {
@@ -45,7 +40,10 @@ namespace NLog.HtmlSmtpTarget.Target
             MaximumEventsPerMessage = 1024;
             HolddownPeriod = new TimeSpan(0, 15, 0);
             _triggerLevel = LogLevel.Warn;
-            Subject = new SimpleLayout("[${machinename}] ${processname} ${event-properties:item=TriggerEvents} of ${event-properties:item=TotalEvents} [${event-properties:item=GroupAlertEvents},${event-properties:item=GroupWarnEvents},${event-properties:item=GroupInfoEvents} ,${event-properties:item=GroupDevEvents}] (${event-properties:item=LostEvents} lost) v${assembly-version}");
+            Subject = new SimpleLayout("[${machinename}] ${processname} ${event-properties:item=TriggerEvents} of ${event-properties:item=TotalEvents} "+
+                "[${event-properties:item=GroupAlertEvents},${event-properties:item=GroupWarnEvents},${event-properties:item=GroupInfoEvents} ,${event-properties:item=GroupDevEvents}]"+
+                " (${event-properties:item=LostEvents} lost)"+
+                "${var:name=htmlsmtp.subject.suffix}");
 
 
             From = string.Format("NLog <htmlsmtp@{0}>", Dns.GetHostName());
@@ -58,10 +56,7 @@ namespace NLog.HtmlSmtpTarget.Target
             Level = new SimpleLayout(@"<img style=""image-{$Level}"" alt=""${Level}"" title=""${Level}"" />");
 
             _mailTemplate = MakeTemplate();
-            Handlebars.RegisterHelper("layout", (writer, context, parameters) =>
-            {
-                LayoutHelper(writer, context, parameters);
-            });
+            Handlebars.RegisterHelper("layout", LayoutHelper);
             _cancelTokenSource = new CancellationTokenSource();
             _worker = new Thread(Worker)
             {
@@ -215,8 +210,6 @@ namespace NLog.HtmlSmtpTarget.Target
         }
 
 
-        /// <summary>
-        /// </summary>
         /// <seealso cref="WorkerState" />
         protected override void Write(LogEventInfo logEvent)
         {
@@ -255,38 +248,54 @@ namespace NLog.HtmlSmtpTarget.Target
             {
                 if ("message".Equals(parameters[0] as string, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    layout = Message;
+                    RenderLayout(writer, context, Message);
                 }
                 else if ("timestamp".Equals(parameters[0] as string, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    layout = Timestamp;
+                    RenderLayout(writer, context, Timestamp);
                 }
                 else if ("context".Equals(parameters[0] as string, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    layout = Context;
+                    RenderLayout(writer, context, Context);
                 }
                 else if ("exception".Equals(parameters[0] as string, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    layout = Exception;
+                    RenderLayout(writer, context, Exception);
                 }
                 else if ("level".Equals(parameters[0] as string, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    layout = Level;
+                    RenderSafeLayout(writer, context, Level);
                 }
                 else
                 {
-                    layout = Message;
+                    RenderLayout(writer, context, Message);
                 }
             }
             else
             {
-                layout = Message;
+                RenderLayout(writer, context, Message);
             }
+        }
 
+        private static void RenderLayout(TextWriter writer, dynamic context, Layout layout)
+        {
             LogEventInfo anEvent = context as LogEventInfo;
             if (anEvent != null && layout != null)
             {
                 writer.Write(layout.Render(anEvent));
+            }
+            else
+            {
+                InternalLogger.Trace("Failed to render template layout");
+            }
+        }
+
+        private static void RenderSafeLayout(TextWriter writer, dynamic context, Layout layout)
+        {
+            LogEventInfo anEvent = context as LogEventInfo;
+            if (anEvent != null && layout != null)
+            {
+                writer.WriteSafeString(layout.Render(anEvent));
             }
             else
             {
@@ -434,7 +443,7 @@ namespace NLog.HtmlSmtpTarget.Target
         {
             if (loggingEvent.Level >= _triggerLevel)
             {
-                // Add a property for the XML so that the transform can 
+                // Add a property for the template so that the transform can 
                 // determine which logging events met the triggering criteria.
                 loggingEvent.Properties[IsTriggerLoggingEvent] = true;
 
