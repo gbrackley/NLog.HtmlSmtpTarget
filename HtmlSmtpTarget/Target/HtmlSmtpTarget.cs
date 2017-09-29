@@ -53,7 +53,8 @@ namespace NLog.HtmlSmtpTarget.Target
             Timestamp = new SimpleLayout("${longdate}");
             Context = new SimpleLayout("${mdlc:item=id}");
             Exception = new SimpleLayout("${exception:format=Message,ToString}");
-            Level = new SimpleLayout(@"<img style=""image-{$Level}"" alt=""${Level}"" title=""${Level}"" />");
+            // Level = new SimpleLayout(@"<img style=""image-{$Level}"" alt=""${Level}"" title=""${Level}"" />");
+            Level = new SimpleLayout(@"${level}");
 
             _mailTemplate = MakeTemplate();
             Handlebars.RegisterHelper("layout", LayoutHelper);
@@ -188,7 +189,7 @@ namespace NLog.HtmlSmtpTarget.Target
             base.InitializeTarget();
 
 
-            _queue = (EventBacklog > 0)
+            _queue = EventBacklog > 0
                 ? new BlockingCollection<LogEventInfo>(EventBacklog)
                 : new BlockingCollection<LogEventInfo>();
 
@@ -243,7 +244,6 @@ namespace NLog.HtmlSmtpTarget.Target
         /// <seealso cref="https://github.com/rexm/Handlebars.Net"/>
         internal void LayoutHelper(TextWriter writer, dynamic context, object[] parameters)
         {
-            Layout layout;
             if (parameters.Length >= 0)
             {
                 if ("message".Equals(parameters[0] as string, StringComparison.InvariantCultureIgnoreCase))
