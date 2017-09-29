@@ -1,11 +1,10 @@
 ﻿/*
- *   (c) Greg Brackley, 2010
+ *   (c) Greg Brackley, 2010-2017
  *   
  *   $Id: SmtpClientFactory.cs 12 2010-10-05 09:54:31Z greg $ 
  */
 
 using System;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
@@ -17,6 +16,15 @@ namespace NLog.HtmlSmtpTarget.Target.HtmlSmtp
 {
     public static class SmtpClientFactory
     {
+        /// <summary>
+        ///     Attempt to make a default SMTP transport URI. The URI is defaulted in the following
+        ///     order:
+        ///     <list type="bullet">
+        ///         <item>From the environment variable 'NLOG_SMTP_CONFIG'</item>
+        ///         <item>By querying if the host has a domain MX record</item>
+        ///         <item>A local SMTP start host on port 25 with no authentication (e.g. IIS SMTP mailer)</item>
+        ///     </list>
+        /// </summary>
         public static string MakeDefaultTransport()
         {
             var env = Environment.GetEnvironmentVariable("NLOG_SMTP_CONFIG");
@@ -188,10 +196,10 @@ namespace NLog.HtmlSmtpTarget.Target.HtmlSmtp
             else
             {
                 throw new ArgumentException(
-                    string.Format("SMTP configuration '{0}' is no valid", smtpConfiguration), "smtpConfiguration");
+                    $@"SMTP configuration '{smtpConfiguration}' is not valid", nameof(smtpConfiguration));
             }
             throw new ArgumentException(
-                string.Format("SMTP configuration '{0}' is no valid", smtpConfiguration), "smtpConfiguration");
+                $@"SMTP configuration '{smtpConfiguration}' is not valid", nameof(smtpConfiguration));
         }
 
         private static ICredentialsByHost MakeCredentials(
