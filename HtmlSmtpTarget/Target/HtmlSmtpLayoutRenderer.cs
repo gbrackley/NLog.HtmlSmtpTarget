@@ -1,4 +1,4 @@
-using System.Linq;
+/*using System.Linq;
 using System.Text;
 using NLog.Common;
 using NLog.Config;
@@ -52,4 +52,4 @@ namespace NLog.HtmlSmtpTarget.Target
         /// </summary>
         public string Target { get; set; }
     }
-}
+}*/

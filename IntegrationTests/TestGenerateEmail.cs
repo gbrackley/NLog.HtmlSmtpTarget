@@ -23,7 +23,7 @@ namespace NLog.HtmlSmtpTarget
             InternalLogger.LogToConsole = true;
             InternalLogger.LogLevel = LogLevel.Trace;
 
-            var target = new Target.HtmlSmtpTarget()
+            var target = new Target.HtmlSmtpTarget
             {
                 Name = "TestInstance",
                 To = "Greg <greg-nlog-htmlsmtpappender-test@lucidsolutions.co.nz>",

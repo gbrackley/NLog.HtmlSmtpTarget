@@ -12,8 +12,8 @@ namespace NLog.HtmlSmtpTarget.Target.Utils
     public static class NonGenericCollectionExtensions
     {
         /// <summary>
-        ///   Return the first item from the collection, or the default value if the
-        ///   list is empty for null.
+        ///     Return the first item from the collection, or the default value if the
+        ///     list is empty for null.
         /// </summary>
         public static T GetSingleton<T>(this ICollection collection)
         {
@@ -47,7 +47,7 @@ namespace NLog.HtmlSmtpTarget.Target.Utils
             else
             {
                 throw new Exception(
-                    string.Format("The container is not a singleton, but has {0} values", collection.Count));
+                    $"The container is not a singleton, but has {collection.Count} values");
             }
         }
 
@@ -69,10 +69,8 @@ namespace NLog.HtmlSmtpTarget.Target.Utils
             else
             {
                 throw new Exception(
-                    string.Format("The container is not a singleton, but has {0} values", collection.Count));
+                    $"The container is not a singleton, but has {collection.Count} values");
             }
         }
-
-       
     }
 }

@@ -8,21 +8,21 @@ using System;
 
 namespace NLog.HtmlSmtpTarget.Target.Utils
 {
-    public class TimeSpanUtils
+    public static class TimeSpanUtils
     {
         /// <summary>
-        /// Return the maximum of two <see cref="TimeSpan"/>
+        ///     Return the maximum of two <see cref="TimeSpan" />
         /// </summary>
-        /// <seealso cref="Math.Max(long,long)"/>
+        /// <seealso cref="Math.Max(long,long)" />
         public static TimeSpan Max(TimeSpan a, TimeSpan b)
         {
             return a.Ticks > b.Ticks ? a : b;
         }
 
         /// <summary>
-        /// Return the minimum of two <see cref="TimeSpan"/>
+        ///     Return the minimum of two <see cref="TimeSpan" />
         /// </summary>
-        /// <seealso cref="Math.Min(long,long)"/>
+        /// <seealso cref="Math.Min(long,long)" />
         public static TimeSpan Min(TimeSpan a, TimeSpan b)
         {
             return a.Ticks < b.Ticks ? a : b;

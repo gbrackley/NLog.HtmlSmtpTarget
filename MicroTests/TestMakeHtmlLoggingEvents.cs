@@ -4,9 +4,9 @@
  *   $Id: TestMakeXmlLoggingEvents.cs 8 2010-09-30 01:59:10Z greg $ 
  */
 
-using NLog.HtmlSmtpTarget.Utils;
 using System;
 using System.Globalization;
+using NLog.HtmlSmtpTarget.Utils;
 using Xunit;
 using XunitShould;
 
@@ -26,7 +26,7 @@ namespace NLog.HtmlSmtpTarget
             };
 
             // Make the email
-            var body = Target.HtmlSmtpTarget.MakeTemplate()(Target.HtmlSmtpTarget.MakeMailBodyModel(events, 0, LogLevel.Warn));
+            var body = HtmlSmtpTarget.Target.HtmlSmtpTarget.MakeTemplate()(HtmlSmtpTarget.Target.HtmlSmtpTarget.MakeMailBodyModel(events, 0, LogLevel.Warn));
             Log.InfoFormat("Mail body is:\n{0}", body);
 
 
@@ -49,7 +49,7 @@ namespace NLog.HtmlSmtpTarget
             };
 
             // Make the email
-            var body = Target.HtmlSmtpTarget.MakeTemplate()(Target.HtmlSmtpTarget.MakeMailBodyModel(events, 0, LogLevel.Warn));
+            var body = HtmlSmtpTarget.Target.HtmlSmtpTarget.MakeTemplate()(HtmlSmtpTarget.Target.HtmlSmtpTarget.MakeMailBodyModel(events, 0, LogLevel.Warn));
             Log.InfoFormat("Mail body is:\n{0}", body);
 
 
@@ -69,7 +69,7 @@ namespace NLog.HtmlSmtpTarget
             };
 
             // Make the email
-            var body = Target.HtmlSmtpTarget.MakeTemplate()(Target.HtmlSmtpTarget.MakeMailBodyModel(events, 0, LogLevel.Warn));
+            var body = HtmlSmtpTarget.Target.HtmlSmtpTarget.MakeTemplate()(HtmlSmtpTarget.Target.HtmlSmtpTarget.MakeMailBodyModel(events, 0, LogLevel.Warn));
             Log.InfoFormat("Mail body is:\n{0}", body);
 
 

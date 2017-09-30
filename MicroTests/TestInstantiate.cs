@@ -15,7 +15,7 @@ namespace NLog.HtmlSmtpTarget
         [Fact]
         public void TestInstantiateAppender()
         {
-            var target = new Target.HtmlSmtpTarget();
+            var target = new HtmlSmtpTarget.Target.HtmlSmtpTarget();
             target.ShouldNotBeNull();
         }
 
@@ -23,7 +23,7 @@ namespace NLog.HtmlSmtpTarget
         [Fact]
         public void TestInstantiateAndActicvateAppenderSampleManditoryFields()
         {
-            var target = new Target.HtmlSmtpTarget()
+            var target = new HtmlSmtpTarget.Target.HtmlSmtpTarget()
             {
                 To = "homer@simpson.com",
                 From = "homer@simpson.com",

@@ -30,8 +30,8 @@ namespace NLog.HtmlSmtpTarget.Target
             string resourceName,
             string cidName)
         {
-            string resourcePath = string.Format("nlog.Resources.Icons.{0}.gif", resourceName);
-            Stream stream = typeof (Resources).Assembly.GetManifestResourceStream(resourcePath);
+            string resourcePath = $"nlog.Resources.Icons.{resourceName}.gif";
+            Stream stream = typeof(Resources).Assembly.GetManifestResourceStream(resourcePath);
             if (stream != null)
             {
                 return new LinkedResource(stream, "image/gif")
@@ -42,7 +42,7 @@ namespace NLog.HtmlSmtpTarget.Target
             else
             {
                 InternalLogger.Debug("Failed to load resource '{0}', the resources are:", resourcePath);
-                foreach (string aResourceName in typeof (Resources).Assembly.GetManifestResourceNames())
+                foreach (string aResourceName in typeof(Resources).Assembly.GetManifestResourceNames())
                 {
                     InternalLogger.Debug(aResourceName);
                 }

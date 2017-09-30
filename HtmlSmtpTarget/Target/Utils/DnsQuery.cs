@@ -16,15 +16,16 @@ namespace NLog.HtmlSmtpTarget.Target.Utils
     }
 
     /// <summary>
-    /// Provide a wrapper around 'DnsApi' to provide basic query support.
+    ///     Provide a wrapper around 'DnsApi' to provide basic query support.
     /// </summary>
-    /// <seealso cref="http://www.eggheadcafe.com/PrintSearchContent.asp?LINKID=889"/>
-    /// <seealso cref="http://www.eggheadcafe.com/articles/20050129.asp "/>
-    /// <seealso cref="http://social.msdn.microsoft.com/Forums/en-US/csharpgeneral/thread/89b21138-596f-4efc-8e86-d440d260c41e/"/>
+    /// <seealso cref="http://www.eggheadcafe.com/PrintSearchContent.asp?LINKID=889" />
+    /// <seealso cref="http://www.eggheadcafe.com/articles/20050129.asp " />
+    /// <seealso
+    ///     cref="http://social.msdn.microsoft.com/Forums/en-US/csharpgeneral/thread/89b21138-596f-4efc-8e86-d440d260c41e/" />
     public static class DnsQuery
     {
         /// <summary>
-        /// Query a name for MX records.
+        ///     Query a name for MX records.
         /// </summary>
         /// <returns>The list of MX records records unordered (natural ordering)</returns>
         public static IList<MxRecord> QueryMx(string domain)
@@ -53,8 +54,8 @@ namespace NLog.HtmlSmtpTarget.Target.Utils
             WinApiMxRecord recWinApiMx;
             for (IntPtr nextResult = queryResults; !nextResult.Equals(IntPtr.Zero); nextResult = recWinApiMx.pNext)
             {
-                recWinApiMx = (WinApiMxRecord) Marshal.PtrToStructure(nextResult, typeof (WinApiMxRecord));
-                if (recWinApiMx.wType == (short)queryType)
+                recWinApiMx = (WinApiMxRecord) Marshal.PtrToStructure(nextResult, typeof(WinApiMxRecord));
+                if (recWinApiMx.wType == (short) queryType)
                 {
                     string exchangerName = Marshal.PtrToStringAuto(recWinApiMx.pNameExchange);
                     mxRecords.Add(
@@ -73,9 +74,8 @@ namespace NLog.HtmlSmtpTarget.Target.Utils
 
 
         /// <summary>
-        /// 
         /// </summary>
-        /// <seealso cref="http://msdn.microsoft.com/en-us/library/cc982162%28VS.85%29.aspx"/>
+        /// <seealso cref="http://msdn.microsoft.com/en-us/library/cc982162%28VS.85%29.aspx" />
         private enum QueryOptions
         {
             DNS_QUERY_ACCEPT_TRUNCATED_RESPONSE = 1,
@@ -96,18 +96,19 @@ namespace NLog.HtmlSmtpTarget.Target.Utils
 
 
         /// <summary>
-        /// The DNS_MX_DATA structure represents a DNS mail exchanger (MX) record as specified in section 3.3.9 of RFC 1035.
+        ///     The DNS_MX_DATA structure represents a DNS mail exchanger (MX) record as specified in section 3.3.9 of RFC 1035.
         /// </summary>
         /// <remarks>
-        ///   Use a  sequential layout. This handles 32bit/64bit environments better than an 'Explicit' layout.
+        ///     Use a  sequential layout. This handles 32bit/64bit environments better than an 'Explicit' layout.
         /// </remarks>
-        /// <seealso cref="http://msdn.microsoft.com/en-us/library/ms682082%28VS.85%29.aspx"/>
-        /// <seealso cref="http://msdn.microsoft.com/en-us/library/ms682070%28VS.85%29.aspx"/>
+        /// <seealso cref="http://msdn.microsoft.com/en-us/library/ms682082%28VS.85%29.aspx" />
+        /// <seealso cref="http://msdn.microsoft.com/en-us/library/ms682070%28VS.85%29.aspx" />
         [StructLayout(LayoutKind.Sequential)]
         private struct WinApiMxRecord
         {
             // DnsRecord fields
             public IntPtr pNext;
+
             public string pName;
             public short wType;
             public short wDataLength;
@@ -117,6 +118,7 @@ namespace NLog.HtmlSmtpTarget.Target.Utils
 
             // Mx Record fields
             public IntPtr pNameExchange;
+
             public short wPreference;
             public short Pad;
         }
@@ -144,29 +146,29 @@ namespace NLog.HtmlSmtpTarget.Target.Utils
             DNS_TYPE_A = 1,
             DNS_TYPE_CNAME = 5,
             DNS_TYPE_MX = 15,
+
             // DNS_TYPE_TEXT = 16,
             DNS_TYPE_SRV = 33
         }
 
         /// <summary>
-        /// 
         /// </summary>
-        /// <seealso cref="http://msdn.microsoft.com/en-us/library/ms682016%28VS.85%29.aspx"/>
+        /// <seealso cref="http://msdn.microsoft.com/en-us/library/ms682016%28VS.85%29.aspx" />
         [DllImport("Dnsapi", EntryPoint = "DnsQuery_W", CharSet = CharSet.Unicode, SetLastError = true,
             ExactSpelling = true)]
-        private static extern Int32 DnsApiDnsQuery(
+        private static extern int DnsApiDnsQuery(
             [MarshalAs(UnmanagedType.VBByRefStr)] ref string sName,
             QueryTypes wType,
             QueryOptions options,
-            UInt32 aipServers,
+            uint aipServers,
             ref IntPtr ppQueryResults,
-            UInt32 pReserved);
+            uint pReserved);
 
         /// <summary>
-        /// The DnsRecordListFree function frees memory allocated for DNS records 
-        /// obtained using the DnsQuery function.
+        ///     The DnsRecordListFree function frees memory allocated for DNS records
+        ///     obtained using the DnsQuery function.
         /// </summary>
-        /// <seealso cref="http://msdn.microsoft.com/en-us/library/ms682021%28VS.85%29.aspx"/>
+        /// <seealso cref="http://msdn.microsoft.com/en-us/library/ms682021%28VS.85%29.aspx" />
         [DllImport("Dnsapi", EntryPoint = "DnsRecordListFree", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern void DnsApiDnsRecordListFree(IntPtr pRecordList, int FreeType);
     }

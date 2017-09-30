@@ -42,9 +42,9 @@ namespace NLog.HtmlSmtpTarget.Target.HtmlSmtp
                     var mxRecord = mxs
                         .OrderBy(mx => mx.Preference)
                         .FirstOrDefault();
-                    if (mxRecord != null && !string.IsNullOrEmpty(mxRecord.Name))
+                    if (!string.IsNullOrEmpty(mxRecord?.Name))
                     {
-                        return string.Format("smtp://{0}", mxRecord.Name);
+                        return $"smtp://{mxRecord.Name}";
                     }
                     else
                     {

@@ -1,26 +1,25 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
 using System.Threading;
+using HandlebarsDotNet;
 using NLog.Common;
 using NLog.Config;
 using NLog.HtmlSmtpTarget.Properties;
+using NLog.HtmlSmtpTarget.Target.HtmlSmtp;
 using NLog.HtmlSmtpTarget.Target.Utils;
 using NLog.Layouts;
 using NLog.Targets;
-using System.ComponentModel;
-using System.IO;
-using HandlebarsDotNet;
-using NLog.HtmlSmtpTarget.Target.HtmlSmtp;
 
 namespace NLog.HtmlSmtpTarget.Target
 {
-    using System.Linq;
-
     [Target("HtmlSmtp")]
     public class HtmlSmtpTarget : Targets.Target
     {
@@ -40,13 +39,14 @@ namespace NLog.HtmlSmtpTarget.Target
             MaximumEventsPerMessage = 1024;
             HolddownPeriod = new TimeSpan(0, 15, 0);
             _triggerLevel = LogLevel.Warn;
-            Subject = new SimpleLayout("[${machinename}] ${processname} ${event-properties:item=TriggerEvents} of ${event-properties:item=TotalEvents} "+
-                "[${event-properties:item=GroupAlertEvents},${event-properties:item=GroupWarnEvents},${event-properties:item=GroupInfoEvents} ,${event-properties:item=GroupDevEvents}]"+
-                " (${event-properties:item=LostEvents} lost)"+
+            Subject = new SimpleLayout(
+                "[${machinename}] ${processname} ${event-properties:item=TriggerEvents} of ${event-properties:item=TotalEvents} " +
+                "[${event-properties:item=GroupAlertEvents},${event-properties:item=GroupWarnEvents},${event-properties:item=GroupInfoEvents} ,${event-properties:item=GroupDevEvents}]" +
+                " (${event-properties:item=LostEvents} lost)" +
                 "${var:name=htmlsmtp.subject.suffix}");
 
 
-            From = string.Format("NLog <htmlsmtp@{0}>", Dns.GetHostName());
+            From = $"NLog <htmlsmtp@{Dns.GetHostName()}>";
             Transport = new SimpleLayout(SmtpClientFactory.MakeDefaultTransport());
 
             Message = new SimpleLayout("${message}");
@@ -98,23 +98,27 @@ namespace NLog.HtmlSmtpTarget.Target
         public MailPriority Priority { get; set; }
 
         /// <summary>
-        /// The layout used to render a message in the html mail body
+        ///     The layout used to render a message in the html mail body
         /// </summary>
         public Layout Message { get; set; }
+
         /// <summary>
-        /// The layout used to render a timestamp in the html mail body
+        ///     The layout used to render a timestamp in the html mail body
         /// </summary>
         public Layout Timestamp { get; set; }
+
         /// <summary>
-        /// The layout used to render context information (MDC, NDC, NDLC) in the html mail body
+        ///     The layout used to render context information (MDC, NDC, NDLC) in the html mail body
         /// </summary>
         public Layout Context { get; set; }
+
         /// <summary>
-        /// The layout used to render an exception in the html mail body
+        ///     The layout used to render an exception in the html mail body
         /// </summary>
         public Layout Exception { get; set; }
+
         /// <summary>
-        /// The layout used to render a level in the html mail body
+        ///     The layout used to render a level in the html mail body
         /// </summary>
         public Layout Level { get; set; }
 
@@ -174,12 +178,11 @@ namespace NLog.HtmlSmtpTarget.Target
         /// <summary>
         ///     The level which causes an email to be sent.
         /// </summary>
-        /// <seealso cref="Threshold" />
         [DefaultValue("Warn")]
         public string TriggerLevel
         {
-            get { return _triggerLevel.ToString(); }
-            set { _triggerLevel = LogLevel.FromString(value); }
+            get => _triggerLevel.ToString();
+            set => _triggerLevel = LogLevel.FromString(value);
         }
 
 
@@ -234,15 +237,15 @@ namespace NLog.HtmlSmtpTarget.Target
 
 
         /// <summary>
-        /// A HandleBars helper to call the NLog layout renderer
+        ///     A HandleBars helper to call the NLog layout renderer
         /// </summary>
         /// <remarks>
-        ///   The handlebar helper called 'layout' provides one parameter which is the name of
-        /// the specific layout on this target. The current log message (LogEventInfo) is
-        /// then formatted based on the configured NLog Layout.
+        ///     The handlebar helper called 'layout' provides one parameter which is the name of
+        ///     the specific layout on this target. The current log message (LogEventInfo) is
+        ///     then formatted based on the configured NLog Layout.
         /// </remarks>
-        /// <seealso cref="https://github.com/rexm/Handlebars.Net"/>
-        internal void LayoutHelper(TextWriter writer, dynamic context, object[] parameters)
+        /// <seealso cref="https://github.com/rexm/Handlebars.Net" />
+        private void LayoutHelper(TextWriter writer, dynamic context, object[] parameters)
         {
             if (parameters.Length >= 0)
             {
@@ -279,8 +282,7 @@ namespace NLog.HtmlSmtpTarget.Target
 
         private static void RenderLayout(TextWriter writer, dynamic context, Layout layout)
         {
-            LogEventInfo anEvent = context as LogEventInfo;
-            if (anEvent != null && layout != null)
+            if (context is LogEventInfo anEvent && layout != null)
             {
                 writer.Write(layout.Render(anEvent));
             }
@@ -292,8 +294,7 @@ namespace NLog.HtmlSmtpTarget.Target
 
         private static void RenderSafeLayout(TextWriter writer, dynamic context, Layout layout)
         {
-            LogEventInfo anEvent = context as LogEventInfo;
-            if (anEvent != null && layout != null)
+            if (context is LogEventInfo anEvent && layout != null)
             {
                 writer.WriteSafeString(layout.Render(anEvent));
             }
@@ -345,9 +346,8 @@ namespace NLog.HtmlSmtpTarget.Target
 
                 while (!_cancelTokenSource.IsCancellationRequested)
                 {
-                    LogEventInfo loggingEvent;
                     if (_queue.TryTake(
-                        out loggingEvent,
+                        out var loggingEvent,
                         ToMillseconds(GetWaitTimeOut(state)),
                         _cancelTokenSource.Token))
                     {
@@ -374,8 +374,7 @@ namespace NLog.HtmlSmtpTarget.Target
             finally
             {
                 // Flush any outstanding events
-                LogEventInfo loggingEvent;
-                while (_queue.TryTake(out loggingEvent))
+                while (_queue.TryTake(out var loggingEvent))
                 {
                     AddLoggingEvent(state, loggingEvent);
                 }
@@ -393,7 +392,7 @@ namespace NLog.HtmlSmtpTarget.Target
         public static int ToMillseconds(TimeSpan t)
         {
             var milli = t.Ticks / TimeSpan.TicksPerMillisecond;
-            return (milli < int.MaxValue) ? (int)milli : int.MaxValue;
+            return milli < int.MaxValue ? (int) milli : int.MaxValue;
         }
 
         /// <summary>
@@ -416,7 +415,15 @@ namespace NLog.HtmlSmtpTarget.Target
                 var now = DateTime.UtcNow;
 
                 long loggingEventsLost = Interlocked.Read(ref _lostEvents);
-                Deliver(MakeEmail(state.Buffer.ToList(), loggingEventsLost));
+                var message = MakeEmail(state.Buffer.ToList(), loggingEventsLost);
+                if (message != null)
+                {
+                    Deliver(message);
+                }
+                else
+                {
+                    InternalLogger.Warn("HTML SMTP message discarded due to configuration issue");
+                }
 
                 // Reduce the lost event count by the number that have been reported
                 // in the email.
@@ -468,47 +475,82 @@ namespace NLog.HtmlSmtpTarget.Target
 
         public MailMessage MakeEmail(IList<LogEventInfo> buffer, long loggingEventsLost)
         {
-            var model = MakeMailBodyModel(buffer, loggingEventsLost, _triggerLevel);
-            
+            var dummyInfo = MakeDummyLogMessageForRender(buffer, loggingEventsLost);
+
+            var fromAddress = From.Render(dummyInfo);
+            if (!string.IsNullOrWhiteSpace(fromAddress))
+            {
+                var toAddresses = To.Render(dummyInfo);
+                if (!string.IsNullOrWhiteSpace(toAddresses))
+                {
+                    var subject = Subject.Render(dummyInfo);
+                    if (!string.IsNullOrWhiteSpace(subject))
+                    {
+
+                        var mailMessage = new MailMessage
+                        {
+                            From = new MailAddress(fromAddress),
+                            Subject = subject,
+                        };
+
+                        mailMessage.BodyEncoding = Encoding.ASCII;
+                        mailMessage.To.Add(toAddresses);
+
+                        var model = MakeMailBodyModel(buffer, loggingEventsLost, _triggerLevel);
+                        var htmlView = AlternateView.CreateAlternateViewFromString(
+                            RenderHtmlEmailBody(model),
+                            new ContentType("text/html;charset=utf-8"));
+
+                        // Add icons as attachments to the email.
+                        LinkedResources.AddAttachmentIffGifFound(htmlView, "fatal", "/image/FatalIcon.gif");
+                        LinkedResources.AddAttachmentIffGifFound(htmlView, "error", "/image/ErrorIcon.gif");
+                        LinkedResources.AddAttachmentIffGifFound(htmlView, "warn", "/image/WarnIcon.gif");
+                        LinkedResources.AddAttachmentIffGifFound(htmlView, "info", "/image/InfoIcon.gif");
+                        LinkedResources.AddAttachmentIffGifFound(htmlView, "debug", "/image/DebugIcon.gif");
+                        LinkedResources.AddAttachmentIffGifFound(htmlView, "trace", "/image/TraceIcon.gif");
+
+                        mailMessage.AlternateViews.Add(htmlView);
+
+                        var replyTo = ReplyTo?.Render(dummyInfo);
+                        if (!string.IsNullOrEmpty(replyTo))
+                        {
+                            mailMessage.ReplyToList.Add(new MailAddress(replyTo));
+                        }
+                        return mailMessage;
+                    }
+                    else
+                    {
+                        InternalLogger.Info($"Mail 'Subject' '{Subject}' is not valid");
+                    }
+                }
+                else
+                {
+                    InternalLogger.Info($"'To' address '{To}' is not valid");
+                }
+            }
+            else
+            {
+                InternalLogger.Info($"'From' address '{From}' is not valid");
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        ///     When using the renderer a log event is required. This is a dummy
+        ///     event that is used to render non-per message strings.
+        /// </summary>
+        private LogEventInfo MakeDummyLogMessageForRender(IList<LogEventInfo> buffer, long loggingEventsLost)
+        {
             var dummyInfo = new LogEventInfo(LogLevel.Off, "", "");
-            dummyInfo.Properties["LostEvents"]= loggingEventsLost;
-            dummyInfo.Properties["TriggerEvents"] = buffer.Count(e=>e.Level >= _triggerLevel);
+            dummyInfo.Properties["LostEvents"] = loggingEventsLost;
+            dummyInfo.Properties["TriggerEvents"] = buffer.Count(e => e.Level >= _triggerLevel);
             dummyInfo.Properties["TotalEvents"] = buffer.Count;
             dummyInfo.Properties["GroupDevEvents"] = buffer.Count(e => e.Level < LogLevel.Info);
             dummyInfo.Properties["GroupInfoEvents"] = buffer.Count(e => e.Level == LogLevel.Info);
             dummyInfo.Properties["GroupWarnEvents"] = buffer.Count(e => e.Level == LogLevel.Warn);
             dummyInfo.Properties["GroupAlertEvents"] = buffer.Count(e => e.Level > LogLevel.Warn);
-
-
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress(From.Render(dummyInfo)),
-                Subject = Subject.Render(dummyInfo),
-            };
-            mailMessage.To.Add(To.Render(dummyInfo));
-            mailMessage.BodyEncoding = Encoding.ASCII;
-            var htmlView = AlternateView.CreateAlternateViewFromString(
-                RenderHtmlEmailBody(model),
-                new ContentType("text/html;charset=utf-8"));
-
-            // Add icons as attachments to the email.
-            LinkedResources.AddAttachmentIffGifFound(htmlView, "fatal", "/image/FatalIcon.gif");
-            LinkedResources.AddAttachmentIffGifFound(htmlView, "error", "/image/ErrorIcon.gif");
-            LinkedResources.AddAttachmentIffGifFound(htmlView, "warn", "/image/WarnIcon.gif");
-            LinkedResources.AddAttachmentIffGifFound(htmlView, "info", "/image/InfoIcon.gif");
-            LinkedResources.AddAttachmentIffGifFound(htmlView, "debug", "/image/DebugIcon.gif");
-            LinkedResources.AddAttachmentIffGifFound(htmlView, "trace", "/image/TraceIcon.gif");
-
-            mailMessage.AlternateViews.Add(htmlView);
-            if (ReplyTo != null)
-            {
-                var replyTo = ReplyTo.Render(dummyInfo);
-                if (!string.IsNullOrEmpty(replyTo))
-                {
-                    mailMessage.ReplyToList.Add(new MailAddress(replyTo));
-                }
-            }
-            return mailMessage;
+            return dummyInfo;
         }
 
         public string RenderHtmlEmailBody(object model)
@@ -528,13 +570,12 @@ namespace NLog.HtmlSmtpTarget.Target
             long loggingEventsLost,
             LogLevel triggerLevel)
         {
-            var model = new
+            return new
             {
                 TriggerEvents = buffer.Where(e => e.Level >= triggerLevel),
                 AllEvents = buffer,
                 EventsLost = loggingEventsLost,
             };
-            return model;
         }
     }
 }

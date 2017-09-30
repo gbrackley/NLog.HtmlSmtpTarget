@@ -9,20 +9,26 @@ using System.Text.RegularExpressions;
 namespace NLog.HtmlSmtpTarget.Target.Utils
 {
     /// <summary>
-    /// Utilites in support of <see cref="Match"/>
+    ///     Utilites in support of <see cref="Match" />
     /// </summary>
     public static class MatchUtils
     {
         public static string GetSingletonCapture(this Match match, string groupName)
         {
-            var capture = match.Groups[groupName].Captures.GetSingleton<Capture>(null);
-            return (capture != null) ? capture.Value : null;
+            return match
+                .Groups[groupName]
+                .Captures
+                .GetSingleton<Capture>(null)
+                ?.Value;
         }
 
         public static string GetSingletonOrDefaultCapture(this Match match, string groupName)
         {
-            var capture = match.Groups[groupName].Captures.GetSingletonOrDefault<Capture>();
-            return (capture != null) ? capture.Value : null;
+            return match
+                .Groups[groupName]
+                .Captures
+                .GetSingletonOrDefault<Capture>()
+                ?.Value;
         }
     }
 }
